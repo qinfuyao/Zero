@@ -48,77 +48,77 @@ Zero 基于现代且可靠的技术构建：
 - [Bun](https://bun.sh) (v1.2 或更高)
 - [Docker](https://docs.docker.com/engine/install/) (v20 或更高)
 
-在运行应用程序之前，您需要设置服务并配置环境变量。有关环境变量的更多详细信息，请参阅 [Environment Variables](#environment-variables) 部分.
+在运行应用程序之前，您需要设置服务并配置环境变量。有关环境变量的更多详细信息，请参阅 [环境变量](#环境变量) 部分.
 
 ### 启动方式
 
 您可以通过两种方式启动Zero:
 
 <details open>
-<summary><b>Option 1: Standard Setup (Recommended)</b></summary>
+<summary><b>Option 1: 标准启动 (推荐)</b></summary>
 
-#### Quick Start Guide
+#### 快速启动指南
 
-1. **Clone and Install**
+1. **克隆和安装**
 
    ```bash
-   # Clone the repository
+   # 克隆储存库
    git clone https://github.com/Mail-0/Zero.git
    cd Zero
 
-   # Install dependencies
+   # 安装依赖
    bun install
 
-   # Start database locally
+   # 本地启动数据库
    bun docker:up
    ```
 
-2. **Set Up Environment**
+2. **设置环境**
 
-   - Copy `.env.example` to `.env` in project root
+   - 复制 `.env.example` 成 `.env` 到项目根目录
      ```bash
      cp .env.example .env
      ```
-   - Configure your environment variables (see below)
-   - Start the database with the provided docker compose setup: `bun docker:up`
-   - Initialize the database: `bun db:push`
+   - 确认你的环境变量（见下）
+   - 使用提供的 Docker Compose 设置启动数据库： `bun docker:up`
+   - 初始化数据库： `bun db:push`
 
-3. **Start the App**
+3. **启动App**
 
    ```bash
    bun dev
    ```
 
-4. **Open in Browser**
+4. **在浏览器中打开**
 
    Visit [http://localhost:3000](http://localhost:3000)
    </details>
 
 <details>
-<summary><b>Option 2: Dev Container Setup (For VS Code Users)</b></summary>
+<summary><b>Option 2: 开发容器设置（适用于 VS Code 用户）</b></summary>
 
-This option uses VS Code's Dev Containers feature to provide a fully configured development environment with all dependencies pre-installed. It's great for ensuring everyone on the team has the same setup.
+这个选项使用VS Code的Dev Containers特性来提供一个预先安装了所有依赖项的完整配置的开发环境。这对于确保团队中的每个人都有相同的设置是很好的。
 
-1. **Prerequisites**
+1. **先决条件**
 
    - [Docker](https://docs.docker.com/get-docker/)
-   - [VS Code](https://code.visualstudio.com/) or compatible editor
+   - [VS Code](https://code.visualstudio.com/) 或兼容编辑器
    - [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
-2. **Open in Dev Container**
+2. **在开发容器中打开**
 
-   - Clone the repository: `git clone https://github.com/Mail-0/Zero.git`
-   - Open the folder in VS Code
-   - When prompted, click "Reopen in Container" or run the "Dev Containers: Open Folder in Container" command
-   - VS Code will build and start the dev container (this may take a few minutes the first time)
+   - 克隆存储库: `git clone https://github.com/Mail-0/Zero.git`
+   - 在VS Code中打开文件夹
+   - 当出现提示时，单击“Open in Container”或运行“Dev Containers: Open Folder in Container”命令
+   - VS Code将构建并启动开发容器（第一次可能需要几分钟）
 
-3. **Access the App**
+3. **访问应用程序**
 
-   - The app will be available at [http://localhost:3000](http://localhost:3000)
+   - 该应用程序将在 [http://localhost:3000](http://localhost:3000)
 
-4. **Troubleshooting**
-   - If you encounter issues with the container, try rebuilding it using the "Dev Containers: Rebuild Container" command
-   - For dependency issues inside the container:
+4. **故障排除**
+   - 如果您遇到容器问题，请尝试使用“Dev Containers: Rebuild container”命令重建它
+   - 对于容器内部的依赖问题：
      `bash
 rm -rf node_modules
 rm bun.lockb
@@ -126,135 +126,135 @@ bun install
 `
      </details>
 
-### Environment Setup
+### 环境设置
 
-1. **Better Auth Setup**
+1. **Better Auth 设置**
 
-   - Open the `.env` file and change the BETTER_AUTH_SECRET to a random string. (Use `openssl rand -hex 32` to generate a 32 character string)
+   - 打开 `.env` 文件然后把 BETTER_AUTH_SECRET 写成随机的字符串. (用 `openssl rand -hex 32` 生成一个32个字符的字符串)
 
      ```env
      BETTER_AUTH_SECRET=your_secret_key
      ```
 
-2. **Google OAuth Setup** (Required for Gmail integration)
+2. **Google OAuth 设置** (需要 Gmail integration)
 
-   - Go to [Google Cloud Console](https://console.cloud.google.com)
-   - Create a new project
-   - Add the following APIs in your Google Cloud Project: [People API](https://console.cloud.google.com/apis/library/people.googleapis.com), [Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com)
-     - Use the links above and click 'Enable' or
-     - Go to 'APIs and Services' > 'Enable APIs and Services' > Search for 'Google People API' and click 'Enable'
-     - Go to 'APIs and Services' > 'Enable APIs and Services' > Search for 'Gmail API' and click 'Enable'
-   - Enable the Google OAuth2 API
-   - Create OAuth 2.0 credentials (Web application type)
-   - Add authorized redirect URIs:
-     - Development:
+   - 前往 [Google Cloud Console](https://console.cloud.google.com)
+   - 创建一个新项目
+   - 在谷歌Cloud项目中添加以下api: [People API](https://console.cloud.google.com/apis/library/people.googleapis.com), [Gmail API](https://console.cloud.google.com/apis/library/gmail.googleapis.com)
+     - 使用上面的链接并点击“启用”或
+     - 前往 'APIs and Services' > 'Enable APIs and Services' > 搜索 'Google People API' 并且点击 'Enable'
+     - 前往 'APIs and Services' > 'Enable APIs and Services' > 搜索 'Gmail API' 并且点击 'Enable'
+   - 开启 Google OAuth2 API
+   - 创建 OAuth 2.0 凭据 (Web application type)
+   - 添加授权的重定向uri：
+     - 开发环境:
        - `http://localhost:3000/api/auth/callback/google`
-     - Production:
+     - 生产环境:
        - `https://your-production-url/api/auth/callback/google`
-   - Add to `.env`:
+   - 添加到 `.env`:
 
      ```env
      GOOGLE_CLIENT_ID=your_client_id
      GOOGLE_CLIENT_SECRET=your_client_secret
      ```
 
-   - Add yourself as a test user:
+   - 添加你自己成为测试用户:
 
-     - Go to [`Audience`](https://console.cloud.google.com/auth/audience)
-     - Under 'Test users' click 'Add Users'
-     - Add your email and click 'Save'
+     - 前往 [`Audience`](https://console.cloud.google.com/auth/audience)
+     - 在“测试用户”下，点击“添加用户”
+     - 添加你的用户并点击 '保存'
 
-> [!WARNING]
-> The authorized redirect URIs in Google Cloud Console must match **exactly** what you configure in the `.env`, including the protocol (http/https), domain, and path - these are provided above.
+> [!警告]
+> 谷歌Cloud Console中授权的重定向uri必须与您在'。Env '，包括协议（http/https）、域和路径——这些都在上面提供。
 
-### Environment Variables
+### 环境变量
 
-Copy `.env.example` located in the project folder to `.env` in the same folder and configure the following variables:
+复制 `.env.example` 成 `.env` 到项目目录并配置以下变量:
 
 ```env
 # Auth
-BETTER_AUTH_SECRET=     # Required: Secret key for authentication
+BETTER_AUTH_SECRET=     # 需要用于身份验证的密钥
 
-# Google OAuth (Required for Gmail integration)
-GOOGLE_CLIENT_ID=       # Required for Gmail integration
-GOOGLE_CLIENT_SECRET=   # Required for Gmail integration
+# Google OAuth (需要Gmail集成)
+GOOGLE_CLIENT_ID=       # 需要Gmail集成
+GOOGLE_CLIENT_SECRET=   # 需要Gmail集成
 
 # Database
-DATABASE_URL=           # Required: PostgreSQL connection string for backend connection
+DATABASE_URL=           # 需要：PostgreSQL连接字符串用于后端连接
 
 # Redis
-REDIS_URL=              # Redis URL for caching (http://localhost:8079 for local dev)
-REDIS_TOKEN=            # Redis token (upstash-local-token for local dev)
+REDIS_URL=              # Redis URL用于缓存（http://localhost:8079用于本地开发）
+REDIS_TOKEN=            # Redis令牌（upstash-local-token用于本地开发）
 ```
 
-For local development a connection string example is provided in the `.env.example` file located in the same folder as the database.
+在本地开发中一个链接字符串示例在`.env.example`文件中显示在数据库同一文件中.
 
-### Database Setup
+### 数据库设置
 
-Zero uses PostgreSQL for storing data. Here's how to set it up:
+Zero 使用 PostgreSQL 用于存储数据. 以下是如何启动:
 
-1. **Start the Database**
+1. **启动数据库**
 
-   Run this command to start a local PostgreSQL instance:
+   运行这个代码去运行本地数据库 PostgreSQL 实例:
 
    ```bash
    bun docker:up
    ```
 
-   This creates a database with:
+   创建了一个数据库:
 
    - Name: `zerodotemail`
    - Username: `postgres`
    - Password: `postgres`
    - Port: `5432`
 
-2. **Set Up Database Connection**
+2. **设置数据库连接**
 
-   Make sure your database connection string is in `.env` file.
+   确保你的数据库连接字符在 `.env`文件中.
 
-   For local development use:
+   对于本地开发用户:
 
    ```
    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/zerodotemail"
    ```
 
-3. **Database Commands**
+3. **数据库命令**
 
-   - **Set up database tables**:
+   - **设置数据库表**:
 
      ```bash
      bun db:push
      ```
 
-   - **Create migration files** (after schema changes):
+   - **创建迁移文件** (模式更改后):
 
      ```bash
      bun db:generate
      ```
 
-   - **Apply migrations**:
+   - **请求迁移**:
 
      ```bash
      bun db:migrate
      ```
 
-   - **View database content**:
+   - **查看数据库内容**:
      ```bash
      bun db:studio
      ```
-     > If you run `bun dev` in your terminal, the studio command should be automatically running with the app.
+     > 如果你运行 `bun dev` 在你的终端里, studio命令应该与应用程序一起自动运行。
 
-## Contribute
+## 贡献
 
-Please refer to the [contributing guide](.github/CONTRIBUTING.md).
+请参阅 [contributing guide](.github/CONTRIBUTING.md).
 
-If you'd like to help with translating Zero to other languages, check out our [translation guide](.github/TRANSLATION.md).
+如果您想帮助将Zero翻译成其他语言，请查看我们的 [translation guide](.github/TRANSLATION.md).
 
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Mail-0/Zero&type=Timeline)](https://star-history.com/#Mail-0/Zero&Timeline)
 
-## This project wouldn't be possible without these awesome companies
+## 如果没有这些优秀的公司，这个项目是不可能实现的
 
 <div style="display: flex; justify-content: center;">
   <a href="https://vercel.com" style="text-decoration: none;">
