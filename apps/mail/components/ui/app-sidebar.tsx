@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { SquarePenIcon, type SquarePenIconHandle } from '../icons/animated/square-pen';
 import { navigationConfig, bottomNavItems } from '@/config/navigation';
+import { AutumnProvider, useAutumn } from 'autumn-js/next';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSidebar } from '@/components/ui/sidebar';
 import { CreateEmail } from '../create/create-email';
@@ -26,22 +27,18 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useSession } from '@/lib/auth-client';
 import React, { useMemo, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import { GoldenTicketModal } from '../golden';
 import { useStats } from '@/hooks/use-stats';
 import { useTranslations } from 'next-intl';
 import { FOLDERS } from '@/lib/utils';
 import { NavMain } from './nav-main';
 import { NavUser } from './nav-user';
 import { useQueryState } from 'nuqs';
-import { Button } from './button';
-import Image from 'next/image';
-import Link from 'next/link';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: stats } = useStats();
 
   const pathname = usePathname();
-  const { data: session, isPending } = useSession();
+  const { data: session } = useSession();
   const { currentSection, navItems } = useMemo(() => {
     // Find which section we're in based on the pathname
     const section = Object.entries(navigationConfig).find(([, config]) =>
@@ -85,8 +82,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div
           className={`relative z-20 flex w-full flex-col ${state === 'collapsed' ? 'px-0' : 'md:px-2'}`}
         >
-          <SidebarHeader className="flex flex-col gap-2">
-            <NavUser />
+          <SidebarHeader className="flex flex-col">
+            {session && <NavUser />}
             <AnimatePresence mode="wait">
               {showComposeButton && (
                 <motion.div
@@ -120,10 +117,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           className={`mt-auto flex w-full flex-col ${state !== 'collapsed' ? 'px-0 md:px-2' : ''}`}
         >
           <SidebarContent className="py-0 pt-0">
-            <div className="sm:px-2">
-              <GoldenTicketModal />
-            </div>
-
             <NavMain items={bottomNavItems} />
           </SidebarContent>
         </div>
@@ -133,7 +126,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 }
 
 function ComposeButton() {
-  const iconRef = useRef<SquarePenIconHandle>(null);
   const { state } = useSidebar();
   const isMobile = useIsMobile();
   const t = useTranslations();
@@ -144,12 +136,19 @@ function ComposeButton() {
   const [, setActiveReplyId] = useQueryState('activeReplyId');
   const [, setMode] = useQueryState('mode');
 
-  const handleOpenChange = (open: boolean) => {
-    setDialogOpen(open ? 'true' : null);
-    setDraftId(null);
-    setTo(null);
-    setActiveReplyId(null);
-    setMode(null);
+  const handleOpenChange = async (open: boolean) => {
+    if (!open) {
+      // Clear all query params at once for faster closing
+      await Promise.all([
+        setDialogOpen(null),
+        setDraftId(null),
+        setTo(null),
+        setActiveReplyId(null),
+        setMode(null)
+      ]);
+    } else {
+      setDialogOpen('true');
+    }
   };
   return (
     <Dialog open={!!dialogOpen} onOpenChange={handleOpenChange}>
@@ -163,7 +162,9 @@ function ComposeButton() {
           ) : (
             <div className="flex items-center justify-center gap-2.5 pl-0.5 pr-1">
               <PencilCompose className="fill-iconLight dark:fill-iconDark" />
-              <div className="justify-start text-sm leading-none">New email</div>
+              <div className="justify-start text-sm leading-none">
+                {t('common.commandPalette.commands.newEmail')}
+              </div>
             </div>
           )}
         </button>

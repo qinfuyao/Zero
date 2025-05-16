@@ -2,12 +2,17 @@
 
 import { Button } from '@/components/ui/button';
 import { signOut } from '@/lib/auth-client';
-import { dexieStorageProvider } from '@/lib/idb';
-import React, { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
+import { useEffect } from 'react';
+import Error from 'next/error';
 
-export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+export default function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {
     console.error(error);
+  }, [error]);
+
+  useEffect(() => {
+    Sentry.captureException(error);
   }, [error]);
 
   return (
@@ -21,10 +26,9 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
 
         {/* Buttons */}
         <div className="mt-2">
-        <Button
+          <Button
             variant="outline"
             onClick={async () => {
-              await dexieStorageProvider().clear();
               await signOut();
               window.location.href = '/login';
             }}

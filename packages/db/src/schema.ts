@@ -1,7 +1,14 @@
-import { pgTableCreator, text, timestamp, boolean, integer, jsonb, primaryKey } from 'drizzle-orm/pg-core';
+import {
+  pgTableCreator,
+  text,
+  timestamp,
+  boolean,
+  integer,
+  jsonb,
+  primaryKey,
+} from 'drizzle-orm/pg-core';
 import { defaultUserSettings } from '@zero/db/user_settings_default';
 import { unique } from 'drizzle-orm/pg-core';
-import type { WritingStyleMatrix } from '@zero/mail/services/writing-style-service';
 
 export const createTable = pgTableCreator((name) => `mail0_${name}`);
 
@@ -85,10 +92,10 @@ export const connection = createTable(
     email: text('email').notNull(),
     name: text('name'),
     picture: text('picture'),
-    accessToken: text('access_token').notNull(),
+    accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
     scope: text('scope').notNull(),
-    providerId: text('provider_id').notNull(),
+    providerId: text('provider_id').$type<'google' | 'microsoft'>().notNull(),
     expiresAt: timestamp('expires_at').notNull(),
     createdAt: timestamp('created_at').notNull(),
     updatedAt: timestamp('updated_at').notNull(),
@@ -133,17 +140,26 @@ export const userSettings = createTable('user_settings', {
   updatedAt: timestamp('updated_at').notNull(),
 });
 
-export const writingStyleMatrix = createTable('writing_style_matrix', {
-  connectionId: text()
-    .notNull()
-    .references(() => connection.id),
-  numMessages: integer().notNull(),
-  style: jsonb().$type<WritingStyleMatrix>().notNull(),
-  updatedAt: timestamp().defaultNow().notNull().$onUpdate(() => new Date())
-}, (table) => {
-  return [
-    primaryKey({
-      columns: [table.connectionId],
-    }),
-  ]
-})
+export const writingStyleMatrix = createTable(
+  'writing_style_matrix',
+  {
+    connectionId: text()
+      .notNull()
+      .references(() => connection.id, { onDelete: 'cascade' }),
+    numMessages: integer().notNull(),
+    // TODO: way too much pain to get this type to work,
+    // revisit later
+    style: jsonb().$type<unknown>().notNull(),
+    updatedAt: timestamp()
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => {
+    return [
+      primaryKey({
+        columns: [table.connectionId],
+      }),
+    ];
+  },
+);

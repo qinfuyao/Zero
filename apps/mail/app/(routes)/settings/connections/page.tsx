@@ -12,34 +12,44 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { SettingsCard } from '@/components/settings/settings-card';
 import { AddConnectionDialog } from '@/components/connection/add';
+import { useSession, authClient } from '@/lib/auth-client';
 import { useConnections } from '@/hooks/use-connections';
-import { deleteConnection } from '@/actions/connections';
+import { useTRPC } from '@/providers/query-provider';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMutation } from '@tanstack/react-query';
+import { Trash, Plus, Unplug } from 'lucide-react';
+import { useThreads } from '@/hooks/use-threads';
 import { emailProviders } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import { useSession } from '@/lib/auth-client';
+import { Badge } from '@/components/ui/badge';
 import { useTranslations } from 'next-intl';
-import { Trash, Plus } from 'lucide-react';
 import { useState } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 
 export default function ConnectionsPage() {
+  const { data, isLoading, refetch: refetchConnections } = useConnections();
   const { refetch } = useSession();
-  const { data: connections, mutate, isLoading } = useConnections();
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
   const t = useTranslations();
+  const trpc = useTRPC();
+  const { mutateAsync: deleteConnection } = useMutation(trpc.connections.delete.mutationOptions());
+  const [{ refetch: refetchThreads }] = useThreads();
 
   const disconnectAccount = async (connectionId: string) => {
-    try {
-      await deleteConnection(connectionId);
-      toast.success(t('pages.settings.connections.disconnectSuccess'));
-      mutate();
-      refetch();
-    } catch (error) {
-      console.error('Error disconnecting account:', error);
-      toast.error(t('pages.settings.connections.disconnectError'));
-    }
+    await deleteConnection(
+      { connectionId },
+      {
+        onError: (error) => {
+          console.error('Error disconnecting account:', error);
+          toast.error(t('pages.settings.connections.disconnectError'));
+        },
+      },
+    );
+    toast.success(t('pages.settings.connections.disconnectSuccess'));
+    void refetchConnections();
+    refetch();
+    void refetchThreads();
   };
 
   return (
@@ -67,9 +77,9 @@ export default function ConnectionsPage() {
                 </div>
               ))}
             </div>
-          ) : connections?.length ? (
+          ) : data?.connections?.length ? (
             <div className="lg: grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-              {connections.map((connection) => (
+              {data.connections.map((connection) => (
                 <div
                   key={connection.id}
                   className="bg-popover flex items-center justify-between rounded-lg border p-4"
@@ -123,37 +133,63 @@ export default function ConnectionsPage() {
                       </div>
                     </div>
                   </div>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-primary ml-4 shrink-0"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>{t('pages.settings.connections.disconnectTitle')}</DialogTitle>
-                        <DialogDescription>
-                          {t('pages.settings.connections.disconnectDescription')}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="flex justify-end gap-4">
-                        <DialogClose asChild>
-                          <Button variant="outline">
-                            {t('pages.settings.connections.cancel')}
-                          </Button>
-                        </DialogClose>
-                        <DialogClose asChild>
-                          <Button onClick={() => disconnectAccount(connection.id)}>
-                            {t('pages.settings.connections.remove')}
-                          </Button>
-                        </DialogClose>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <div className="flex items-center gap-4">
+                    {data.disconnectedIds?.includes(connection.id) ? (
+                      <>
+                        <div>
+                          <Badge variant="destructive">
+                            {t('pages.settings.connections.disconnected')}
+                          </Badge>
+                        </div>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={async () => {
+                            await authClient.linkSocial({
+                              provider: connection.providerId,
+                              callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/settings/connections`,
+                            });
+                          }}
+                        >
+                          <Unplug className="size-4" />
+                          {t('pages.settings.connections.reconnect')}
+                        </Button>
+                      </>
+                    ) : null}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-primary ml-4 shrink-0"
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>
+                            {t('pages.settings.connections.disconnectTitle')}
+                          </DialogTitle>
+                          <DialogDescription>
+                            {t('pages.settings.connections.disconnectDescription')}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex justify-end gap-4">
+                          <DialogClose asChild>
+                            <Button variant="outline">
+                              {t('pages.settings.connections.cancel')}
+                            </Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button onClick={() => disconnectAccount(connection.id)}>
+                              {t('pages.settings.connections.remove')}
+                            </Button>
+                          </DialogClose>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
               ))}
             </div>
